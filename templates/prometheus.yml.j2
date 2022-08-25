@@ -1,0 +1,14 @@
+#jinja2: lstrip_blocks: "True"
+global:
+  scrape_interval: 1m
+  scrape_timeout: 10s
+  evaluation_interval: 1m
+scrape_configs:
+  {% for target in prometheus_scrape_targets %}
+  - job_name: {{ target.name }}
+    metrics_path: /metrics
+    scheme: {{ target.scheme }}
+    static_configs:
+      - targets:
+        - {{ target.endpoint }}
+  {% endfor %}

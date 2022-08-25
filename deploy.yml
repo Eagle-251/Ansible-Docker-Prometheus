@@ -1,0 +1,56 @@
+--- 
+
+- hosts: all
+  become: true
+
+  vars_files:
+    - vars.yml
+  #roles:
+    #- geerlingguy.node_exporter
+
+  tasks:
+    - name: Install Pip.
+      apt: name=python3-pip state=present
+
+    - name: Install Docker Python library.
+      pip: name=docker state=present
+
+    - name: Enusre base Docker paths exsits
+      file: 
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ docker_base_dir }}"
+
+    - name: Ensure networks exist
+      docker_network:
+        name: "{{ prometheus_docker_network }}"
+          
+    - name: Ensure paths exist 
+      file: 
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ prometheus_volumes }}"
+
+    - name: Template prometheus.yml
+      template:
+        src: "{{ playbook_dir }}/templates/prometheus.yml.j2"
+        dest: "{{ prometheus_data_dir }}/prometheus.yml"
+
+    - name: Ensure prometheus container is created and running 
+      docker_container:
+        name: "{{ prometheus_container_name }}"
+        image: "{{ prometheus_image_name }}"
+        user: "root:root"
+        env:
+        networks:
+          - name: "{{ prometheus_docker_network }}"
+        volumes:
+          - "{{ prometheus_data_dir }}:/etc/prometheus"
+        published_ports: "{{ prometheus_published_ports }}"
+        state: started 
+        restart: yes
+          
+
+

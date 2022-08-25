@@ -1,0 +1,25 @@
+
+# Base Docker Vars
+docker_base_dir: "/srv"
+
+prometheus_published_ports:
+  - 9090:9090
+
+prometheus_data_dir: "{{ docker_base_dir}}/prometheus/config"
+
+prometheus_docker_network: prometheus
+
+prometheus_container_name: prometheus
+prometheus_volumes:
+  - "{{ prometheus_data_dir }}"
+
+prometheus_scrape_targets:
+  - name: prometheus
+    scheme: http
+    endpoint: localhost:9090
+  - name: becode_vm
+    scheme: http
+    endpoint: 100.64.114.83:9100
+
+prometheus_image_name: "prom/prometheus"
+
